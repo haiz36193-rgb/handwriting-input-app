@@ -1,0 +1,77 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+!target/*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.dart_tool/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Database
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Large files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.backup

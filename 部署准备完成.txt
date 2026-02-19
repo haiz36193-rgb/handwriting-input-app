@@ -1,0 +1,243 @@
+============================================
+部署准备完成 - 下一步操作指南
+============================================
+
+✓ 已完成的工作：
+-----------------------------------
+1. 初始化Git仓库
+2. 复制Railway配置文件
+3. 添加健康检查控制器
+4. 重新编译后端项目
+5. 提交代码到Git
+
+✓ 项目已准备就绪，可以部署到Railway！
+
+============================================
+下一步操作（在Railway网站完成）
+============================================
+
+步骤1：访问Railway
+-----------------------------------
+浏览器打开：https://railway.app/
+使用GitHub账号登录
+
+步骤2：创建新项目
+-----------------------------------
+1. 点击 "New Project" 按钮
+2. 选择 "Deploy from GitHub repo"
+3. 授权访问GitHub仓库
+
+步骤3：创建GitHub仓库
+-----------------------------------
+如果还没有GitHub仓库，需要先创建：
+
+方式A：通过Railway创建
+1. 在Railway中选择 "New Project"
+2. 选择 "Deploy from GitHub repo"
+3. 点击链接创建新仓库
+
+方式B：手动创建
+1. 访问 https://github.com/new
+2. 创建新仓库：handwriting-input-app
+3. 复制仓库URL
+4. 在本地执行：
+   git remote add origin https://github.com/你的用户名/handwriting-input-app.git
+   git push -u origin master
+
+步骤4：添加MySQL数据库
+-----------------------------------
+1. 在Railway项目页面点击 "New Service"
+2. 选择 "Database"
+3. 选择 "MySQL"
+4. 等待创建完成
+5. 记录数据库连接信息（在Variables标签）
+
+步骤5：添加Redis缓存
+-----------------------------------
+1. 点击 "New Service"
+2. 选择 "Database"
+3. 选择 "Redis"
+4. 等待创建完成
+5. 记录Redis连接信息（在Variables标签）
+
+步骤6：添加后端服务
+-----------------------------------
+1. 点击 "New Service"
+2. 选择 "Deploy from GitHub repo"
+3. 选择您的handwriting-input-app仓库
+4. 选择 "backend" 目录
+5. 点击 "Deploy Now"
+
+步骤7：配置环境变量
+-----------------------------------
+点击后端服务 → "Variables" → "New Variable"
+
+添加以下环境变量：
+
+DATABASE_URL=
+jdbc:mysql://<mysql-host>:3306/handwriting_input_app?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+DATABASE_USERNAME=<从MySQL服务的Variables获取>
+DATABASE_PASSWORD=<从MySQL服务的Variables获取>
+
+REDIS_HOST=<从Redis服务的Variables获取>
+REDIS_PORT=6379
+
+JWT_SECRET=
+生成一个强密钥（建议64位随机字符串）
+可以使用在线工具生成：https://randomkeygen.com/
+
+PORT=8080
+
+步骤8：重启服务
+-----------------------------------
+1. 点击 "Redeploy" 按钮
+2. 等待重新部署完成
+3. 查看日志确认启动成功
+
+步骤9：初始化数据库
+-----------------------------------
+方式1：使用Railway控制台
+1. 点击MySQL服务
+2. 点击 "Console" 标签
+3. 执行SQL脚本（参考scripts/init.sql）
+
+方式2：使用数据库工具
+1. 使用MySQL Workbench或DBeaver
+2. 使用Railway提供的连接信息连接
+3. 执行初始化SQL脚本
+
+步骤10：测试部署
+-----------------------------------
+1. 查看后端服务分配的域名
+   - 点击后端服务
+   - 在"Domains"标签查看
+   - 格式：https://your-app.railway.app
+
+2. 测试健康检查
+   访问：https://your-app.railway.app/api/v1/health
+   应该返回：
+   {"status":"UP","timestamp":"...","service":"handwriting-input-app","version":"1.0.0"}
+
+3. 测试用户注册
+   POST https://your-app.railway.app/api/v1/user/register
+   Body: {"username":"test","email":"test@example.com","password":"123456"}
+
+4. 测试用户登录
+   POST https://your-app.railway.app/api/v1/user/login
+   Body: {"username":"test","password":"123456"}
+
+============================================
+部署完成后的操作
+============================================
+
+更新前端APP配置
+-----------------------------------
+1. 修改文件：frontend/lib/utils/app_config.dart
+
+   修改前：
+   static const String baseUrl = 'http://192.168.1.10:8080/api/v1';
+
+   修改后：
+   static const String baseUrl = 'https://your-app.railway.app/api/v1';
+
+   注意：将your-app.railway.app替换为实际分配的域名
+
+2. 重新编译APK
+   cd frontend
+   flutter build apk --release
+
+3. 获取新的APK文件
+   位置：frontend/build/app/outputs/flutter-apk/app-release.apk
+
+4. 分发给测试用户
+   - 上传到文件分享平台
+   - 通过微信/QQ发送
+   - 上传到应用商店
+
+============================================
+重要信息保存
+-----------------------------------
+请保存以下信息，后续需要使用：
+
+Railway项目地址：
+[部署后会显示]
+
+后端服务地址：
+[部署后会显示]
+
+MySQL连接信息：
+- Host: [从MySQL服务获取]
+- Port: 3306
+- Database: handwriting_input_app
+- Username: [从MySQL服务获取]
+- Password: [从MySQL服务获取]
+
+Redis连接信息：
+- Host: [从Redis服务获取]
+- Port: 6379
+
+============================================
+故障排除
+============================================
+
+问题1：部署失败
+- 检查编译日志
+- 确认Dockerfile配置正确
+- 检查依赖是否完整
+
+问题2：数据库连接失败
+- 检查环境变量配置
+- 确认数据库服务已启动
+- 检查网络连接
+
+问题3：Redis连接失败
+- 检查环境变量配置
+- 确认Redis服务已启动
+- 检查连接信息
+
+问题4：健康检查失败
+- 检查应用日志
+- 确认端口配置正确
+- 检查防火墙设置
+
+============================================
+费用监控
+-----------------------------------
+
+免费额度：$5/月
+
+监控方法：
+1. 登录Railway
+2. 查看项目概览
+3. 查看资源使用情况
+
+资源限制：
+- MySQL：512MB存储
+- Redis：512MB存储
+- 应用：512MB内存
+- 带宽：1GB/月
+
+预估支持：
+- 100-500注册用户
+- 10-50并发用户
+- 1000-5000次API调用/天
+
+============================================
+联系支持
+-----------------------------------
+
+Railway文档：https://docs.railway.app/
+Railway社区：https://community.railway.app/
+
+遇到问题：
+- 查看Railway日志
+- 查看应用日志
+- 在社区寻求帮助
+
+============================================
+
+准备就绪！现在可以访问 https://railway.app/ 开始部署了！
+
+祝部署顺利！
+============================================

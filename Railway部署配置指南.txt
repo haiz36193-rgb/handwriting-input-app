@@ -1,0 +1,230 @@
+============================================
+Railway部署配置指南
+============================================
+
+✓ 代码已推送到GitHub
+✓ 配置文件已准备完成
+✓ 强密钥已生成
+
+============================================
+部署步骤
+============================================
+
+步骤1：访问Railway并创建项目
+-----------------------------------
+1. 访问：https://railway.app/
+2. 使用GitHub账号登录
+3. 点击 "New Project"
+4. 选择 "Deploy from GitHub repo"
+5. 选择 "haiz36193-rgb/handwriting-input-app"
+6. 点击 "Deploy Now"
+
+步骤2：添加MySQL数据库
+-----------------------------------
+1. 在项目页面点击 "New Service"
+2. 选择 "Database"
+3. 选择 "MySQL"
+4. 等待创建完成（约1-2分钟）
+5. 点击MySQL服务 → "Variables" 标签
+6. 记录以下信息：
+   - MYSQLDATABASE=handwriting_input_app
+   - MYSQLHOST=mysql.railway.app（实际地址）
+   - MYSQLUSERNAME=your-username
+   - MYSQLPASSWORD=your-password
+   - MYSQLPORT=3306
+
+步骤3：添加Redis缓存
+-----------------------------------
+1. 点击 "New Service" → "Database" → "Redis"
+2. 等待创建完成（约1分钟）
+3. 点击Redis服务 → "Variables" 标签
+4. 记录以下信息：
+   - REDISHOST=redis.railway.app（实际地址）
+   - REDISPORT=6379
+
+步骤4：配置后端服务
+-----------------------------------
+后端服务应该已经自动部署，如果没有：
+
+1. 点击 "New Service" → "Deploy from GitHub repo"
+2. 选择 handwriting-input-app 仓库
+3. 根目录选择
+4. 点击 "Deploy Now"
+
+步骤5：配置环境变量
+-----------------------------------
+1. 点击后端服务
+2. 选择 "Variables" 标签
+3. 点击 "New Variable" 添加以下变量：
+
+# 数据库配置
+DATABASE_URL=jdbc:mysql://<MYSQLHOST>:3306/handwriting_input_app?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+DATABASE_USERNAME=<从MySQL服务获取的MYSQLUSERNAME>
+DATABASE_PASSWORD=<从MySQL服务获取的MYSQLPASSWORD>
+
+# Redis配置
+REDIS_HOST=<从Redis服务获取的REDISHOST>
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# 安全配置
+JWT_SECRET=RmNFOT8lfhwjyZA9eMr7JQK1Hpb34xvignqGEC0XoLtaBcsSkUzuDY52VWP6Id
+
+# 服务配置
+PORT=8080
+SPRING_PROFILES_ACTIVE=railway
+
+注意：
+- 将 <MYSQLHOST> 替换为实际的MySQL主机地址
+- 将 <MYSQLUSERNAME> 替换为实际的MySQL用户名
+- 将 <MYSQLPASSWORD> 替换为实际的MySQL密码
+- 将 <REDISHOST> 替换为实际的Redis主机地址
+
+步骤6：重新部署
+-----------------------------------
+1. 添加完所有环境变量后
+2. 点击 "Redeploy" 按钮
+3. 等待重新部署完成（约2-5分钟）
+4. 查看日志确认启动成功
+
+步骤7：初始化数据库
+-----------------------------------
+方式1：使用Railway控制台
+1. 点击MySQL服务
+2. 点击 "Console" 标签
+3. 执行以下SQL创建表：
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    avatar VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 手写记录表
+CREATE TABLE IF NOT EXISTS handwriting_records (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    recognized_text TEXT,
+    quality_score DECIMAL(5,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 字体表
+CREATE TABLE IF NOT EXISTS fonts (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+方式2：使用数据库连接工具
+1. 使用MySQL Workbench或DBeaver
+2. 使用Railway提供的连接信息
+3. 执行上面的SQL脚本
+
+步骤8：测试服务
+-----------------------------------
+1. 查看分配的域名
+   - 点击后端服务
+   - 在 "Domains" 标签查看
+   - 格式：https://your-app.railway.app
+
+2. 测试健康检查
+   访问：https://your-app.railway.app/api/v1/health
+   应该返回：
+   {"status":"UP","timestamp":"...","service":"handwriting-input-app","version":"1.0.0"}
+
+3. 测试用户注册
+   POST https://your-app.railway.app/api/v1/user/register
+   Body: {"username":"test","email":"test@example.com","password":"123456"}
+
+4. 测试用户登录
+   POST https://your-app.railway.app/api/v1/user/login
+   Body: {"username":"test","password":"123456"}
+
+============================================
+环境变量参考值示例
+===========================================
+
+假设Railway分配的值为：
+- MYSQLHOST = mysql-1.railway.app
+- MYSQLUSERNAME = root
+- MYSQLPASSWORD = abc123xyz
+- REDISHOST = redis-1.railway.app
+
+那么环境变量应该配置为：
+
+DATABASE_URL=jdbc:mysql://mysql-1.railway.app:3306/handwriting_input_app?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+DATABASE_USERNAME=root
+DATABASE_PASSWORD=abc123xyz
+
+REDIS_HOST=redis-1.railway.app
+REDIS_PORT=6379
+
+JWT_SECRET=RmNFOT8lfhwjyZA9eMr7JQK1Hpb34xvignqGEC0XoLtaBcsSkUzuDY52VWP6Id
+
+PORT=8080
+SPRING_PROFILES_ACTIVE=railway
+
+============================================
+故障排除
+===========================================
+
+问题1：后端服务启动失败
+- 检查环境变量是否正确
+- 查看服务日志
+- 确认数据库和Redis服务已启动
+
+问题2：数据库连接失败
+- 检查DATABASE_URL格式
+- 确认MySQL服务已启动
+- 验证用户名密码
+
+问题3：健康检查失败
+- 检查端口配置
+- 查看应用日志
+- 确认服务已完全启动
+
+问题4：部署超时
+- 增加healthcheckTimeout值
+- 检查网络连接
+- 查看构建日志
+
+============================================
+监控和费用
+===========================================
+
+查看资源使用：
+- 登录Railway
+- 查看项目概览
+- 查看服务详情
+
+免费额度：$5/月
+包含：
+- MySQL：512MB存储
+- Redis：512MB存储
+- 应用：512MB内存
+- 带宽：1GB/月
+
+============================================
+部署成功后的操作
+===========================================
+
+1. 记录分配的域名
+2. 更新前端APP配置
+3. 重新编译APK
+4. 分发给测试用户
+5. 收集反馈
+
+============================================

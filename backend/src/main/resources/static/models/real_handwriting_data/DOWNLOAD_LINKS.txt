@@ -1,0 +1,102 @@
+========================================
+所有下载链接汇总
+========================================
+
+【百度网盘资源】
+========================================
+
+1. 手写汉字数据集（3755字，21万张）
+   URL: https://pan.baidu.com/s/1h4d1ogn_MAnE_X0LNHowYg
+   提取码: i6km
+   大小: 未知
+   状态: 待下载
+
+2. MSDS手写签名数据集（402人）
+   URL: https://pan.baidu.com/s/1WAQanBiH_LwEkSpCM6CDJg
+   提取码: 52CV
+   大小: 未知
+   状态: 待下载
+
+【官方数据集】
+========================================
+
+3. CASIA-HWDB 1.1 训练集
+   下载页面: http://www.nlpr.ia.ac.cn/databases/handwriting/Home.html
+   文件名: HWDB1.1trn_gnt.zip
+   大小: 1873MB
+   样本数: 940,800张
+   状态: 待下载
+
+4. CASIA-HWDB 1.1 测试集
+   下载页面: http://www.nlpr.ia.ac.cn/databases/handwriting/Home.html
+   文件名: HWDB1.1tst_gnt.zip
+   大小: 471MB
+   样本数: 235,200张
+   状态: 待下载
+
+【Kaggle数据集】
+========================================
+
+5. Kaggle中文字符数据集
+   URL: https://www.kaggle.com/datasets/pascalbliem/handwritten-chinese-character-hanzi-datasets
+   样本数: 7,330个字符
+   状态: 需要注册Kaggle账号
+
+【阿里云天池】
+========================================
+
+6. 天池HCCR数据集
+   URL: https://tianchi.aliyun.com/dataset/163884
+   类型: 手写汉字识别
+   状态: 需要注册天池账号
+
+【GitHub项目】
+========================================
+
+7. CASIA-HWDB项目
+   URL: https://github.com/XBCoder128/CASIA-HWDB
+   类型: 包含数据集说明和代码
+   状态: 可访问
+
+8. TensorFlow手写识别
+   URL: https://github.com/CCP101/ML_2021
+   类型: 完整项目代码
+   状态: 可访问
+
+9. CNN手写识别
+   URL: https://github.com/lihel/CNNhanderWriter
+   类型: CNN实现
+   状态: 可访问
+
+【学术机构】
+========================================
+
+10. SCUT-EPT（华南理工）
+    来源: 华南理工大学
+    样本数: 50,000张
+    书写者: 2,986人
+    状态: 需要学术申请
+
+11. Chinese MNIST
+    来源: 纽卡斯尔大学
+    样本数: 约15,000张
+    状态: 公开可用
+
+【备用资源】
+========================================
+
+12. NIST19数据集
+    来源: 美国国家标准与技术研究所
+    样本数: 810,000张
+    书写者: 3,600人
+    状态: 公开可用
+
+13. IAM Database
+    类型: 英文手写文本
+    状态: 公开可用
+
+========================================
+总计: 13个数据集资源
+预计样本数: >1,450,000张
+预计书写者: >3,700人
+========================================

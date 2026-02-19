@@ -1,0 +1,252 @@
+===========================================
+运维手册 - 故障排查与维护
+===========================================
+
+一、服务管理
+===========================================
+
+1. 启动服务
+   cd backend
+   java -jar target/handwriting-input-app-1.0.0.jar
+   
+   或使用生产配置：
+   java -jar target/handwriting-input-app-1.0.0.jar --spring.profiles.active=prod
+
+2. 停止服务
+   # 查找进程
+   ps aux | grep handwriting-input-app
+   
+   # 停止进程
+   kill -15 <PID>
+   
+   # 或强制停止
+   kill -9 <PID>
+
+3. 重启服务
+   systemctl restart handwriting-app
+
+4. 查看服务状态
+   systemctl status handwriting-app
+
+5. 查看服务日志
+   tail -f logs/handwriting-input-app.log
+
+二、数据库管理
+===========================================
+
+1. MySQL服务管理
+   systemctl start mysql
+   systemctl stop mysql
+   systemctl restart mysql
+   systemctl status mysql
+
+2. 数据库备份
+   mysqldump -u root -p handwriting_input_app > backup_$(date +%Y%m%d).sql
+
+3. 数据库恢复
+   mysql -u root -p handwriting_input_app < backup_20260131.sql
+
+4. 数据库连接测试
+   mysql -u handwriting -p handwriting123 handwriting_input_app
+
+5. 查看数据库大小
+   SELECT 
+     table_name AS 'Table',
+     ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'
+   FROM information_schema.TABLES
+   WHERE table_schema = 'handwriting_input_app'
+   ORDER BY (data_length + index_length) DESC;
+
+6. 优化数据库
+   OPTIMIZE TABLE user_info;
+   OPTIMIZE TABLE handwriting_data;
+   OPTIMIZE TABLE user_font;
+
+三、Redis管理
+===========================================
+
+1. Redis服务管理
+   systemctl start redis
+   systemctl stop redis
+   systemctl restart redis
+   systemctl status redis
+
+2. Redis连接测试
+   redis-cli ping
+
+3. 查看Redis数据
+   redis-cli KEYS '*'
+   
+4. 清理Redis缓存
+   redis-cli FLUSHDB  # 清空当前数据库
+   redis-cli FLUSHALL  # 清空所有数据库
+
+5. 查看Redis内存使用
+   redis-cli INFO memory
+
+四、日志管理
+===========================================
+
+1. 日志文件位置
+   - 应用日志：/opt/app/logs/handwriting-input-app.log
+   - Nginx日志：/var/log/nginx/access.log, error.log
+   - MySQL日志：/var/log/mysql/error.log
+   - 系统日志：/var/log/messages
+
+2. 日志轮转配置
+   /etc/logrotate.d/handwriting-app
+   内容：
+   /opt/app/logs/*.log {
+       daily
+       rotate 30
+       compress
+       delaycompress
+       notifempty
+       create 0640 appuser appuser
+       sharedscripts
+       postrotate
+           systemctl reload handwriting-app > /dev/null 2>&1 || true
+       endscript
+   }
+
+3. 日志查看
+   # 查看实时日志
+   tail -f logs/handwriting-input-app.log
+   
+   # 查看最近100行
+   tail -n 100 logs/handwriting-input-app.log
+   
+   # 搜索错误日志
+   grep "ERROR" logs/handwriting-input-app.log
+   
+   # 按时间搜索
+   grep "2026-01-31 10:" logs/handwriting-input-app.log
+
+五、性能监控
+===========================================
+
+1. CPU使用率
+   top
+   或
+   htop
+
+2. 内存使用
+   free -h
+
+3. 磁盘使用
+   df -h
+
+4. 网络连接
+   netstat -tuln
+   或
+   ss -tuln
+
+5. JVM监控
+   jstat -gc <PID>
+   jmap -heap <PID>
+   jstack <PID>
+
+六、常见故障排查
+===========================================
+
+1. 服务无法启动
+   检查：
+   - 端口是否被占用（netstat -tuln | grep 8080）
+   - 数据库是否连接正常
+   - Redis是否启动
+   - 配置文件是否正确
+
+2. 数据库连接失败
+   检查：
+   - MySQL服务是否运行
+   - 用户名密码是否正确
+   - 数据库是否存在
+   - 网络是否畅通
+
+3. 内存溢出
+   解决：
+   - 增加JVM堆内存（-Xmx参数）
+   - 优化代码，减少内存使用
+   - 检查是否有内存泄漏
+
+4. CPU使用率过高
+   检查：
+   - 是否有死循环
+   - 数据库查询是否优化
+   - 是否有大量并发请求
+
+5. 磁盘空间不足
+   解决：
+   - 清理日志文件
+   - 清理临时文件
+   - 增加磁盘空间
+   - 定期备份数据
+
+七、安全维护
+===========================================
+
+1. 定期更新密码
+   - 数据库root密码
+   - Redis密码
+   - 应用配置中的密钥
+
+2. 防火墙配置
+   firewall-cmd --add-port=8080/tcp --permanent
+   firewall-cmd --reload
+
+3. SSL证书更新
+   Let's Encrypt证书90天有效期
+   设置自动续期：
+   certbot renew --dry-run
+
+4. 安全扫描
+   定期进行漏洞扫描
+   更新依赖库版本
+
+八、备份与恢复
+===========================================
+
+1. 自动备份脚本
+   #!/bin/bash
+   DATE=$(date +%Y%m%d)
+   BACKUP_DIR=/backup
+   
+   # 备份数据库
+   mysqldump -u root -pPASSWORD handwriting_input_app > $BACKUP_DIR/db_$DATE.sql
+   
+   # 备份上传文件
+   tar -czf $BACKUP_DIR/uploads_$DATE.tar.gz /opt/app/uploads/
+   
+   # 删除30天前的备份
+   find $BACKUP_DIR -name "*.sql" -mtime +30 -delete
+   find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
+
+2. 恢复流程
+   - 停止应用服务
+   - 恢复数据库
+   - 恢复上传文件
+   - 启动应用服务
+   - 验证数据完整性
+
+九、应急响应
+===========================================
+
+1. 服务宕机
+   - 立即重启服务
+   - 检查日志找出原因
+   - 修复问题
+   - 加强监控
+
+2. 数据丢失
+   - 立即停止写入
+   - 从最近备份恢复
+   - 重新导入增量数据
+   - 优化备份策略
+
+3. 安全事件
+   - 立即隔离受影响系统
+   - 分析攻击来源
+   - 修复安全漏洞
+   - 通知相关人员
+
+===========================================

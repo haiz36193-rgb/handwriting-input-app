@@ -1,0 +1,297 @@
+===========================================
+开发文档 - API接口详解
+===========================================
+
+一、基础信息
+===========================================
+基础URL: http://localhost:8080/api/v1
+数据格式: JSON
+字符编码: UTF-8
+认证方式: JWT Token
+
+二、通用响应格式
+===========================================
+{
+  "code": 200,
+  "message": "success",
+  "data": {},
+  "timestamp": 1640784000000
+}
+
+状态码说明：
+- 200: 成功
+- 400: 请求参数错误
+- 401: 未授权/Token失效
+- 403: 禁止访问
+- 404: 资源不存在
+- 500: 服务器内部错误
+
+三、用户服务接口
+===========================================
+
+1. 用户注册
+POST /user/register
+请求体：
+{
+  "phone": "13800138000",
+  "password": "123456",
+  "nickname": "张三",
+  "wechatOpenid": "wx_openid_123"
+}
+响应：
+{
+  "code": 200,
+  "message": "注册成功",
+  "data": {
+    "userId": 1001,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "nickname": "张三"
+  }
+}
+
+2. 用户登录
+POST /user/login
+请求体：
+{
+  "phone": "13800138000",
+  "password": "123456"
+}
+或微信登录：
+{
+  "wechatOpenid": "wx_openid_123"
+}
+
+3. 获取用户信息
+GET /user/info
+请求头：
+Authorization: Bearer {token}
+
+4. 更新用户信息
+PUT /user/info
+请求头：
+Authorization: Bearer {token}
+请求体：
+{
+  "nickname": "新昵称",
+  "avatarUrl": "http://example.com/avatar.jpg"
+}
+
+四、手写笔迹接口
+===========================================
+
+1. 上传手写笔迹
+POST /handwriting/upload
+请求头：
+Authorization: Bearer {token}
+请求体：
+{
+  "collectionType": 1,
+  "characterCode": "U+4E2D",
+  "characterText": "中",
+  "strokeSequence": [...],
+  "startPressure": 120,
+  "endPressure": 80,
+  "strokeArc": 15,
+  "characterSpacing": 2.5,
+  "writingSpeed": 1.8,
+  "imageUrl": "http://example.com/image.jpg"
+}
+
+2. 上传扫描文档
+POST /handwriting/scan-upload
+请求头：
+Authorization: Bearer {token}
+请求体：
+{
+  "scanImageUrl": "http://example.com/scan.jpg",
+  "collectionDevice": "扫描仪"
+}
+
+3. 获取笔迹列表
+GET /handwriting/list?page=1&pageSize=20
+请求头：
+Authorization: Bearer {token}
+
+4. 删除笔迹
+DELETE /handwriting/{handwritingId}
+请求头：
+Authorization: Bearer {token}
+
+五、特征识别接口
+===========================================
+
+1. 提取笔迹特征
+POST /feature/extract
+请求头：
+Authorization: Bearer {token}
+请求体：
+{
+  "handwritingIds": [1, 2, 3]
+}
+响应：
+{
+  "code": 200,
+  "message": "特征提取成功",
+  "data": {
+    "featureId": 1,
+    "featureData": {...},
+    "modelVersion": "v1.0.0"
+  }
+}
+
+2. 获取用户特征
+GET /feature/user
+请求头：
+Authorization: Bearer {token}
+
+六、字体生成接口
+===========================================
+
+1. 生成字体
+POST /font/generate
+请求头：
+Authorization: Bearer {token}
+请求体：
+{
+  "fontName": "我的字体",
+  "handwritingIds": [1, 2, 3],
+  "beautifyMode": 1
+}
+响应：
+{
+  "code": 200,
+  "message": "字体生成任务已提交",
+  "data": {
+    "fontId": 1,
+    "fontName": "我的字体"
+  }
+}
+
+2. 查询字体状态
+GET /font/status/{fontId}
+请求头：
+Authorization: Bearer {token}
+
+3. 获取字体列表
+GET /font/list
+请求头：
+Authorization: Bearer {token}
+
+4. 设置默认字体
+PUT /font/default/{fontId}
+请求头：
+Authorization: Bearer {token}
+
+5. 删除字体
+DELETE /font/{fontId}
+请求头：
+Authorization: Bearer {token}
+
+七、文件上传接口
+===========================================
+
+1. 上传图片
+POST /file/upload/image
+请求头：
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+请求体：file (二进制文件)
+
+2. 上传手写笔迹
+POST /file/upload/handwriting
+请求头：
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+3. 上传扫描文档
+POST /file/upload/scan
+请求头：
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+4. 上传字体文件
+POST /file/upload/font
+请求头：
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+5. 删除文件
+DELETE /file/delete?fileUrl=xxx
+请求头：
+Authorization: Bearer {token}
+
+八、数据库设计
+===========================================
+
+1. 用户表 (user_info)
+- id: 主键
+- phone: 手机号（唯一）
+- password: 密码（BCrypt加密）
+- nickname: 昵称
+- avatarUrl: 头像URL
+- wechatOpenid: 微信OpenID（唯一）
+- status: 状态（0=禁用，1=正常）
+- createTime: 创建时间
+- updateTime: 更新时间
+
+2. 笔迹数据表 (handwriting_data)
+- id: 主键
+- userId: 用户ID
+- collectionType: 采集类型（1=手写，2=扫描）
+- characterCode: 汉字编码
+- characterText: 汉字内容
+- strokeSequence: 笔画顺序（JSON）
+- startPressure: 起笔力度
+- endPressure: 收笔力度
+- strokeArc: 连笔弧度
+- characterSpacing: 字间距
+- writingSpeed: 书写速度
+- imageUrl: 图片URL
+- qualityScore: 质量评分
+- createTime: 创建时间
+
+3. 笔迹特征表 (handwriting_feature)
+- id: 主键
+- userId: 用户ID（唯一）
+- featureData: 特征数据（JSON）
+- modelVersion: 模型版本
+- extractionTime: 提取时间
+- createTime: 创建时间
+
+4. 字体表 (user_font)
+- id: 主键
+- userId: 用户ID
+- fontName: 字体名称
+- fontType: 字体类型（ttf/otf）
+- fontUrl: 字体文件URL
+- previewImageUrl: 预览图片URL
+- similarityScore: 相似度评分
+- fontSizeMode: 字号范围
+- beautifyMode: 美化模式（1/2/3）
+- isDefault: 是否默认
+- generateStatus: 生成状态（0=生成中，1=已完成，2=失败）
+- createTime: 创建时间
+
+九、开发规范
+===========================================
+
+1. 命名规范
+   - 包名：com.handwriting
+   - 类名：大驼峰命名
+   - 方法名：小驼峰命名
+   - 常量：全大写下划线分隔
+   - 数据库表：小写下划线分隔
+
+2. 代码规范
+   - 使用Lombok简化代码
+   - 使用统一响应格式Result
+   - 异常统一处理
+   - 日志使用SLF4J
+
+3. 提交规范
+   - 功能：feat: 添加新功能
+   - 修复：fix: 修复bug
+   - 文档：docs: 更新文档
+   - 样式：style: 代码格式调整
+
+===========================================

@@ -1,0 +1,15 @@
+# Target labels
+ nuget-populate
+# Source files and their labels
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/nuget-populate
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/5209ab1b4b0f3e81a9029066a0d112db/nuget-populate.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/90550a27661f0f3a6b94598eb338a845/nuget-populate-complete.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-build.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-configure.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-copyfile.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-download.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-install.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-mkdir.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-patch.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-test.rule
+C:/Users/Administrator/handwriting-input-app/frontend/build/windows/x64/_deps/nuget-subbuild/CMakeFiles/d613c8bb63ecc1f5ce6a08538af957a1/nuget-populate-update.rule

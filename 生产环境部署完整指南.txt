@@ -1,0 +1,206 @@
+===========================================
+生产环境部署完整指南
+===========================================
+
+一、服务器要求
+===========================================
+操作系统：Linux (推荐 CentOS 7+ 或 Ubuntu 18.04+)
+CPU：4核以上
+内存：8GB以上
+磁盘：100GB以上（SSD推荐）
+网络：公网IP，开放端口80、443
+
+二、环境准备
+===========================================
+
+1. 安装JDK 11
+   CentOS/RHEL:
+   yum install java-11-openjdk-devel
+   
+   Ubuntu/Debian:
+   apt install openjdk-11-jdk
+
+2. 安装Maven
+   下载：https://maven.apache.org/download.cgi
+   解压到 /opt/maven
+   配置环境变量
+
+3. 安装MySQL 8.0
+   CentOS/RHEL:
+   yum install mysql-server
+   
+   Ubuntu/Debian:
+   apt install mysql-server
+
+4. 安装Redis
+   CentOS/RHEL:
+   yum install redis
+   
+   Ubuntu/Debian:
+   apt install redis-server
+
+三、数据库配置
+===========================================
+
+1. 创建数据库用户
+   CREATE USER 'handwriting'@'%' IDENTIFIED BY 'strong_password_here';
+   GRANT ALL PRIVILEGES ON handwriting_input_app.* TO 'handwriting'@'%';
+   FLUSH PRIVILEGES;
+
+2. 导入数据库
+   mysql -u root -p < scripts/init.sql
+
+3. 配置主从复制（可选）
+   - 配置主服务器
+   - 配置从服务器
+   - 测试同步
+
+四、应用部署
+===========================================
+
+1. 编译打包
+   cd backend
+   mvn clean package -DskipTests
+
+2. 上传文件
+   scp target/handwriting-input-app-1.0.0.jar user@server:/opt/app/
+
+3. 配置文件
+   复制 application-prod.yml 到服务器
+   修改以下配置：
+   - 数据库连接信息
+   - Redis连接信息
+   - JWT密钥（生产环境使用强密钥）
+   - 文件上传路径
+
+4. 创建启动脚本
+   #!/bin/bash
+   java -jar /opt/app/handwriting-input-app-1.0.0.jar \
+     --spring.profiles.active=prod \
+     > /opt/app/logs/app.log 2>&1 &
+
+5. 配置systemd服务
+   cat > /etc/systemd/system/handwriting-app.service << EOF
+   [Unit]
+   Description=Handwriting Input App
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=appuser
+   WorkingDirectory=/opt/app
+   ExecStart=/usr/bin/java -jar /opt/app/handwriting-input-app-1.0.0.jar --spring.profiles.active=prod
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   EOF
+
+6. 启动服务
+   systemctl daemon-reload
+   systemctl start handwriting-app
+   systemctl enable handwriting-app
+
+五、Nginx配置（反向代理）
+===========================================
+
+1. 安装Nginx
+   yum install nginx 或 apt install nginx
+
+2. 配置反向代理
+   cat > /etc/nginx/conf.d/handwriting-app.conf << EOF
+   upstream handwriting {
+       server 127.0.0.1:8080;
+   }
+
+   server {
+       listen 80;
+       server_name api.yourdomain.com;
+
+       location / {
+           proxy_pass http://handwriting;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+   }
+   EOF
+
+3. 重启Nginx
+   systemctl restart nginx
+   systemctl enable nginx
+
+六、HTTPS配置（可选）
+===========================================
+
+1. 申请SSL证书
+   - Let's Encrypt（免费）
+   - 或购买商业证书
+
+2. 配置Nginx
+   server {
+       listen 443 ssl;
+       server_name api.yourdomain.com;
+
+       ssl_certificate /path/to/cert.pem;
+       ssl_certificate_key /path/to/key.pem;
+
+       location / {
+           proxy_pass http://handwriting;
+           proxy_set_header Host $host;
+       }
+   }
+
+七、监控与日志
+===========================================
+
+1. 日志管理
+   - 应用日志：/opt/app/logs/
+   - Nginx日志：/var/log/nginx/
+   - MySQL日志：/var/log/mysql/
+
+2. 监控脚本
+   - CPU使用率
+   - 内存使用率
+   - 磁盘空间
+   - 服务状态
+
+3. 告警配置
+   - 邮件通知
+   - 短信通知
+   - 企业微信/钉钉
+
+八、备份策略
+===========================================
+
+1. 数据库备份
+   # 每日备份
+   0 2 * * * mysqldump -u root -p handwriting_input_app > /backup/db_$(date +\%Y\%m\%d).sql
+
+2. 应用备份
+   - 定期备份JAR包
+   - 备份配置文件
+   - 备份上传的文件
+
+3. 恢复测试
+   - 定期测试备份恢复
+   - 记录恢复时间
+
+九、性能优化
+===========================================
+
+1. JVM参数优化
+   -Xms2g -Xmx4g
+   -XX:+UseG1GC
+   -XX:MaxGCPauseMillis=200
+
+2. MySQL优化
+   - innodb_buffer_pool_size=2G
+   - innodb_log_file_size=512M
+   - max_connections=200
+
+3. Redis优化
+   - maxmemory=2gb
+   - maxmemory-policy=allkeys-lru
+
+===========================================

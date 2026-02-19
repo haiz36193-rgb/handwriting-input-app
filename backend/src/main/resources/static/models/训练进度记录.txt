@@ -1,0 +1,27 @@
+训练进度记录
+============
+暂停时间: 2026-02-04 01:25
+
+已保存模型:
+- best_handwriting_model_full.h5 (最新最佳模型)
+- handwriting_model_full.h5 (检查点模型)
+- label_mapping_full.json (标签映射)
+
+配置文件:
+- handwriting_model_full_config.json
+
+下次恢复训练命令:
+cd C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models
+python train_batch.py
+
+监控要点:
+1. 每10分钟检查训练速度（正常约800-900ms/step）
+2. 每10分钟检查Python进程数量（应只有1个）
+3. 如果发现多个Python进程，立即清理多余进程
+
+当前任务:
+- 使用全部261,300样本训练
+- 批次大小32
+- 50轮训练
+- 学习率0.0001
+- 早停耐心值10轮

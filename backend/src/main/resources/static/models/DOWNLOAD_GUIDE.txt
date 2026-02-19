@@ -1,0 +1,72 @@
+========================================
+真人手写字迹数据集下载指南
+========================================
+截止时间：明天8:00
+
+【网络下载状态】
+========================================
+✗ 所有自动下载任务失败
+✗ 原因：网络连接问题（连接被重置）
+
+【解决方案：手动下载】
+========================================
+
+必须下载的数据集（真人手写，真实笔迹）：
+----------------------------------------
+
+⭐⭐⭐⭐⭐ 优先级1（必须下载）
+----------------------------------------
+
+1. 手写汉字数据集（3755字）
+   - 样本数：210,000张（20万训练 + 1万测试）
+   - 百度网盘：https://pan.baidu.com/s/1h4d1ogn_MAnE_X0LNHowYg
+   - 提取码：i6km
+   - 下载后放到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\real_handwriting_data\
+
+2. MSDS手写签名数据集
+   - 样本数：402名用户的真实签名
+   - 百度网盘：https://pan.baidu.com/s/1WAQanBiH_LwEkSpCM6CDJg
+   - 提取码：52CV
+   - 下载后放到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\real_handwriting_data\
+
+⭐⭐⭐⭐ 优先级2（强烈推荐）
+----------------------------------------
+
+3. CASIA-HWDB官方数据集
+   - 样本数：300名作者，1,176,000张图片
+   - 官方下载：http://www.nlpr.ia.ac.cn/databases/handwriting/Home.html
+   - 需要下载文件：
+     * HWDB1.1trn_gnt（1873MB）- 训练集
+     * HWDB1.1tst_gnt（471MB）- 测试集
+
+4. Kaggle中文字符数据集
+   - 样本数：7,330个手写字符
+   - 需要注册Kaggle账号
+   - 链接：https://www.kaggle.com/datasets/pascalbliem/handwritten-chinese-character-hanzi-datasets
+
+5. 阿里云天池HCCR数据集
+   - 需要注册阿里云天池账号
+   - 链接：https://tianchi.aliyun.com/dataset/163884
+
+【操作步骤】
+========================================
+
+步骤1：打开浏览器
+步骤2：复制上面的百度网盘链接
+步骤3：输入提取码
+步骤4：下载到指定目录
+步骤5：告诉我下载完成
+
+【已创建的目录】
+========================================
+C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\real_handwriting_data\
+
+【预计时间】
+========================================
+- 百度网盘下载：约10-20分钟
+- 整理数据：约5分钟
+- 总计：约30分钟
+
+========================================
+下次反馈：10分钟后
+========================================

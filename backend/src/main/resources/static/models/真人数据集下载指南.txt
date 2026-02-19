@@ -1,0 +1,122 @@
+=== 真人手写字迹数据集下载指南 ===
+
+【推荐数据集1：Traditional Chinese Handwriting Dataset】★★★★★
+------------------------------------------------------------
+数据集信息：
+- 总样本数：684,677 张图片
+- 字符数：13,065 个中文字符
+- 图片大小：300x300 像素
+- 授权方式：CC BY-NC-SA 4.0（非商业用途）
+- 数据来源：台湾南台科技大学
+
+下载方式1：GitHub Release（推荐）
+--------------------------------
+链接：https://github.com/AI-FREE-Team/Traditional-Chinese-Handwriting-Dataset/releases
+
+步骤：
+1. 访问上述链接
+2. 下载 "all_data.zip" 文件（约2GB）
+3. 解压到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\handwriting_data\n4. 解压后会得到 cleaned_data 文件夹
+
+下载方式2：Git Clone
+--------------------------------
+命令：
+git clone https://github.com/chenkenanalytic/handwritting_data_all.git
+
+注意：由于文件较大，建议使用GitHub Release直接下载zip文件
+
+【推荐数据集2：Handwritten Chinese Character (Hanzi) Datasets】★★★★
+------------------------------------------------------------
+数据集信息：
+- 样本数：7330 个手写字符
+- 包含：GB2312 编码的6763个汉字 + 171个字符
+- 格式：PNG图像
+
+下载方式：
+--------------------------------
+链接：https://www.kaggle.com/datasets/pascalbliem/handwritten-chinese-character-hanzi-datasets
+
+步骤：
+1. 访问Kaggle数据集页面
+2. 登录Kaggle账号（需要注册）
+3. 点击"Download"按钮
+4. 解压到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\handwriting_data\n
+【推荐数据集3：SCUT-HCCDoc Dataset】★★★
+------------------------------------------------------------
+数据集信息：
+- 数据源：华南理工大学
+- 大小：约2GB
+- 类型：无约束中文手写字迹
+
+下载方式：
+--------------------------------
+链接：https://github.com/HCIILAB/SCUT-HCCDoc_Dataset_Release
+
+云盘下载：
+- 百度云盘（密码：dlvc）
+- OneDrive
+
+步骤：
+1. 访问GitHub页面获取云盘链接
+2. 从百度云盘或OneDrive下载
+3. 解压到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\handwriting_data\n
+【推荐数据集4：CASIA 手写数据集】★★★
+------------------------------------------------------------
+数据集信息：
+- 中国科学院自动化研究所
+- 中文手写字符数据集
+- 学术用途免费
+
+搜索方式：
+--------------------------------
+关键词："CASIA Handwriting Database Chinese download"
+
+=== 下载后的处理步骤 ===
+
+步骤1：创建数据目录
+--------------------------------
+cd C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models
+mkdir handwriting_data
+
+步骤2：解压下载的文件
+--------------------------------
+将下载的zip文件解压到 handwriting_data 目录
+
+步骤3：确认数据结构
+--------------------------------
+典型的数据结构如下：
+handwriting_data/
+├── cleaned_data/          # 数据集主目录
+│   ├── character_1.png
+│   ├── character_2.png
+│   └── ...
+└── labels.json            # 标签文件（如有）
+
+步骤4：通知我完成下载
+--------------------------------
+下载并解压完成后，告诉我：
+1. 使用了哪个数据集
+2. 数据解压位置
+3. 大概的样本数量
+
+我将帮您：
+1. 分析下载的数据格式
+2. 转换为训练所需的格式
+3. 整合到现有训练流程
+4. 开始使用真人数据训练模型
+
+=== 重要提示 ===
+
+1. 存储空间：确保有至少10GB可用空间
+2. 下载时间：大文件可能需要较长时间
+3. 网络稳定：建议使用稳定的网络连接
+4. 备份：下载后建议备份原始文件
+5. 授权：请遵守数据集的授权协议
+
+=== 快速开始 ===
+
+最简单的方式：
+1. 下载推荐数据集1（Traditional Chinese Handwriting Dataset）
+2. 解压到：C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\handwriting_data\n3. 告诉我下载完成，我将立即开始处理
+
+===

@@ -1,0 +1,226 @@
+============================================
+快速部署到Railway - 5分钟完成
+============================================
+
+一、准备阶段（本地）
+============================================
+
+1. 运行部署脚本
+   双击：deploy-to-railway.bat
+
+2. 等待编译完成
+   - 脚本会自动编译项目
+   - 更新Git仓库
+   - 准备配置文件
+
+============================================
+二、部署阶段（Railway网站）
+============================================
+
+1. 访问Railway
+   https://railway.app/
+   使用GitHub账号登录
+
+2. 创建新项目
+   点击 "New Project" → "Deploy from GitHub repo"
+
+3. 选择仓库
+   选择您的handwriting-input-app仓库
+   点击 "Deploy Now"
+
+4. 添加数据库服务
+   点击 "New Service" → "Database" → "MySQL"
+   等待创建完成
+
+5. 添加Redis服务
+   点击 "New Service" → "Database" → "Redis"
+   等待创建完成
+
+6. 配置后端服务
+   点击后端服务 → "Variables"
+   添加以下环境变量：
+
+   DATABASE_URL=jdbc:mysql://<mysql-host>:3306/handwriting_input_app?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+   DATABASE_USERNAME=<从MySQL服务获取>
+   DATABASE_PASSWORD=<从MySQL服务获取>
+
+   REDIS_HOST=<从Redis服务获取>
+   REDIS_PORT=6379
+
+   JWT_SECRET=生成一个强密钥（建议64位随机字符串）
+
+7. 重启服务
+   点击 "Redeploy" 使配置生效
+
+============================================
+三、获取信息
+============================================
+
+1. 查看MySQL连接信息
+   - 点击MySQL服务
+   - 在"Variables"标签页查看：
+     * MYSQLDATABASE=handwriting_input_app
+     * MYSQLHOST=mysql.railway.app
+     * MYSQLUSERNAME=your-username
+     * MYSQLPASSWORD=your-password
+     * MYSQLPORT=3306
+
+2. 查看Redis连接信息
+   - 点击Redis服务
+   - 在"Variables"标签页查看：
+     * REDISHOST=redis.railway.app
+     * REDISPORT=6379
+
+3. 查看后端服务地址
+   - 点击后端服务
+   - 在"Domains"标签页查看分配的域名
+   - 格式：https://your-app.railway.app
+
+============================================
+四、初始化数据库
+============================================
+
+方式1：使用Railway控制台
+1. 点击MySQL服务
+2. 点击 "Console"
+3. 执行SQL脚本：
+   创建数据库表结构（参考scripts/init.sql）
+
+方式2：使用数据库连接工具
+1. 使用Railway提供的连接信息
+2. 使用MySQL Workbench或DBeaver连接
+3. 执行初始化SQL脚本
+
+============================================
+五、测试部署
+============================================
+
+1. 测试健康检查
+   访问：https://your-app.railway.app/api/v1/health
+   应该返回：
+   {"status":"UP","timestamp":"...","service":"handwriting-input-app","version":"1.0.0"}
+
+2. 测试用户注册
+   POST https://your-app.railway.app/api/v1/user/register
+   Body: {"username":"test","email":"test@example.com","password":"123456"}
+
+3. 测试用户登录
+   POST https://your-app.railway.app/api/v1/user/login
+   Body: {"username":"test","password":"123456"}
+
+============================================
+六、更新前端APP
+============================================
+
+1. 修改配置文件
+   文件：frontend\lib\utils\app_config.dart
+   修改前：static const String baseUrl = 'http://192.168.1.10:8080/api/v1';
+   修改后：static const String baseUrl = 'https://your-app.railway.app/api/v1';
+
+2. 重新编译APK
+   cd frontend
+   flutter build apk --release
+
+3. 获取APK文件
+   位置：frontend\build\app\outputs\flutter-apk\app-release.apk
+
+4. 分发APK
+   - 上传到文件分享平台
+   - 通过微信/QQ发送
+   - 上传到应用商店
+
+============================================
+七、邀请测试
+============================================
+
+1. 准备测试材料
+   - 新的APK文件
+   - 安装说明
+   - 测试账号（可选）
+
+2. 分发给测试用户
+   - 发送APK下载链接
+   - 说明安装步骤
+   - 提供使用指南
+
+3. 收集反馈
+   - 功能是否正常
+   - 性能是否满意
+   - 是否有bug
+   - 改进建议
+
+============================================
+八、常见问题
+============================================
+
+Q1: 部署后无法访问？
+A: 检查防火墙设置，确保8080端口开放
+
+Q2: 数据库连接失败？
+A: 检查环境变量配置是否正确
+
+Q3: Redis连接失败？
+A: 确认Redis服务已启动，检查连接信息
+
+Q4: APP无法连接服务器？
+A: 确认baseUrl配置正确，使用HTTPS协议
+
+Q5: 免费额度不够用？
+A: 监控使用情况，优化性能，或升级付费套餐
+
+============================================
+九、监控与维护
+============================================
+
+1. 查看服务状态
+   - Railway Dashboard
+   - 实时监控CPU、内存、带宽使用
+
+2. 查看日志
+   - 点击服务 → "Logs"
+   - 实时查看应用日志
+
+3. 数据备份
+   - Railway自动备份
+   - 定期导出数据
+
+4. 更新部署
+   - git push到GitHub
+   - Railway自动检测并重新部署
+
+============================================
+十、费用说明
+============================================
+
+免费额度：$5/月
+
+包含：
+- MySQL数据库（512MB）
+- Redis缓存（512MB）
+- 应用服务（512MB内存）
+- 带宽（1GB/月）
+
+预估支持：
+- 100-500注册用户
+- 10-50并发用户
+- 1000-5000次API调用/天
+
+超出免费额度：
+- $0.00025/GB内存小时
+- $0.00015/GB带宽
+- 小规模测试基本免费
+
+============================================
+十一、下一步
+============================================
+
+□ 完成部署
+□ 测试所有功能
+□ 邀请10-20个测试用户
+□ 收集反馈
+□ 优化性能
+□ 扩大测试范围
+□ 准备正式发布
+
+============================================

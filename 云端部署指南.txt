@@ -1,0 +1,276 @@
+============================================
+免费云服务器部署指南 - 小范围测试
+============================================
+
+一、推荐免费云平台
+============================================
+
+方案1：Railway（最推荐）
+- 免费额度：$5/月
+- 支持：MySQL、Redis、Docker
+- 自动HTTPS
+- 自动域名：*.railway.app
+- 优点：配置简单，一键部署
+- 缺点：免费额度有限，适合小范围测试
+
+方案2：Render
+- 免费套餐：512MB内存
+- 支持：Docker容器
+- 自动HTTPS
+- 需要外部数据库（如PlanetScale免费版）
+- 优点：稳定性好
+- 缺点：需要额外配置数据库
+
+方案3：Fly.io
+- 免费额度：160小时/月
+- 全球边缘部署
+- 支持Docker
+- 自动HTTPS
+- 优点：性能好，全球加速
+- 缺点：配置相对复杂
+
+方案4：Oracle Cloud Always Free
+- 永久免费2台VM（1 OCPU, 1GB RAM）
+- 需要信用卡验证
+- 优点：完全免费，永久使用
+- 缺点：配置复杂，需要运维能力
+
+============================================
+推荐使用 Railway 部署步骤
+============================================
+
+二、Railway 部署步骤
+============================================
+
+1. 注册账号
+   访问：https://railway.app/
+   使用GitHub账号登录
+
+2. 创建新项目
+   - 点击 "New Project"
+   - 选择 "Deploy from GitHub repo"
+   - 授权访问您的GitHub仓库
+
+3. 准备代码仓库
+   将项目推送到GitHub：
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/yourusername/handwriting-input-app.git
+   git push -u origin main
+
+4. 在Railway配置服务
+
+   步骤1：添加MySQL数据库
+   - 点击 "New Service"
+   - 选择 "Database"
+   - 选择 "MySQL"
+   - Railway会自动创建MySQL实例
+
+   步骤2：添加Redis缓存
+   - 点击 "New Service"
+   - 选择 "Database"
+   - 选择 "Redis"
+   - Railway会自动创建Redis实例
+
+   步骤3：添加后端服务
+   - 点击 "New Service"
+   - 选择 "Deploy from GitHub repo"
+   - 选择您的项目仓库
+   - 选择 "backend" 目录
+
+5. 配置环境变量
+
+   在后端服务中添加以下环境变量：
+
+   SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/handwriting_input_app?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+   SPRING_DATASOURCE_USERNAME=${{MYSQL.USERNAME}}
+   SPRING_DATASOURCE_PASSWORD=${{MYSQL.PASSWORD}}
+   SPRING_REDIS_HOST=${{REDIS.PUBLIC_URL}}
+   SPRING_REDIS_PORT=6379
+   JWT_SECRET=your-strong-secret-key-here-change-in-production
+   TZ=Asia/Shanghai
+
+6. 修改应用配置
+
+   需要修改的文件：
+   - backend/src/main/resources/application-prod.yml
+   - backend/Dockerfile
+
+   主要修改：
+   - 移除硬编码的localhost地址
+   - 使用环境变量配置
+   - 添加健康检查端点
+
+7. 初始化数据库
+
+   方式1：通过Railway的控制台执行SQL
+   方式2：在应用启动时自动执行
+
+8. 部署
+
+   - 点击 "Deploy"
+   - 等待构建完成
+   - Railway会自动分配域名：*.railway.app
+
+9. 测试
+
+   - 访问分配的域名测试API
+   - 测试注册/登录功能
+   - 验证数据库连接
+
+============================================
+三、前端APP配置更新
+============================================
+
+需要修改前端配置文件，使其连接到云端服务器：
+
+文件：frontend/lib/utils/app_config.dart
+
+修改前：
+static const String baseUrl = 'http://192.168.1.10:8080/api/v1';
+
+修改后：
+static const String baseUrl = 'https://your-app.railway.app/api/v1';
+
+重新编译APK：
+cd frontend
+flutter build apk --release
+
+新的APK文件位置：
+frontend/build/app/outputs/flutter-apk/app-release.apk
+
+============================================
+四、域名绑定（可选）
+============================================
+
+如果您有自己的域名：
+
+1. 在域名服务商处添加CNAME记录：
+   主机记录：api
+   记录类型：CNAME
+   记录值：your-app.railway.app
+
+2. 在Railway中配置域名：
+   - 进入项目设置
+   - 选择 "Domains"
+   - 添加自定义域名
+   - Railway会自动配置HTTPS
+
+============================================
+五、监控与维护
+============================================
+
+1. 监控服务状态
+   - Railway Dashboard查看服务状态
+   - 查看日志
+   - 查看资源使用情况
+
+2. 数据备份
+   - 定期导出MySQL数据
+   - Railway提供自动备份功能
+
+3. 更新部署
+   - 代码推送到GitHub
+   - Railway自动检测并重新部署
+
+============================================
+六、费用预估（免费方案）
+============================================
+
+Railway免费额度：$5/月
+
+资源限制：
+- MySQL：512MB存储
+- Redis：512MB存储
+- 应用：512MB内存，1GB带宽
+- 可支持：100-500并发用户
+
+超出免费额度后：
+- 按实际使用量计费
+- $0.00025/GB内存小时
+- $0.00015/GB带宽
+- 预估：小规模测试月费用$0-5
+
+============================================
+七、注意事项
+============================================
+
+1. 安全建议：
+   - 修改JWT密钥为强密钥
+   - 启用HTTPS（Railway自动配置）
+   - 定期更新依赖包
+   - 配置访问速率限制
+
+2. 性能优化：
+   - 使用Redis缓存频繁访问的数据
+   - 数据库查询优化
+   - 启用GZIP压缩
+
+3. 数据保护：
+   - 定期备份数据库
+   - 不要存储敏感信息
+   - 使用环境变量管理密钥
+
+4. 用户体验：
+   - 优化APK大小
+   - 添加启动动画
+   - 完善错误提示
+
+============================================
+八、下一步操作清单
+============================================
+
+□ 1. 将项目代码推送到GitHub
+□ 2. 注册Railway账号
+□ 3. 在Railway创建新项目
+□ 4. 添加MySQL数据库服务
+□ 5. 添加Redis缓存服务
+□ 6. 添加后端服务
+□ 7. 配置环境变量
+□ 8. 初始化数据库表结构
+□ 9. 测试API功能
+□ 10. 修改前端APP配置
+□ 11. 重新编译APK
+□ 12. 邀请测试用户
+□ 13. 收集用户反馈
+□ 14. 根据反馈优化功能
+
+============================================
+九、快速开始命令
+============================================
+
+# 1. 初始化Git仓库
+git init
+git add .
+git commit -m "Initial commit for Railway deployment"
+
+# 2. 创建GitHub仓库并推送
+gh repo create handwriting-input-app --public --source=.
+git push -u origin main
+
+# 3. 修改应用配置（使用环境变量）
+# 参考上面的配置说明
+
+# 4. 部署到Railway
+# 在Railway网站上操作，参考上面的步骤
+
+# 5. 更新前端配置
+cd frontend
+# 修改 lib/utils/app_config.dart
+flutter build apk --release
+
+============================================
+联系方式与支持
+============================================
+
+Railway文档：https://docs.railway.app/
+Railway社区：https://community.railway.app/
+
+遇到问题可以在以下渠道寻求帮助：
+- Railway社区论坛
+- GitHub Issues
+- 技术交流群
+
+============================================

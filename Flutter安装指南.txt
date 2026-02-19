@@ -1,0 +1,85 @@
+===========================================
+Flutter环境安装指南
+===========================================
+
+一、系统要求
+===========================================
+操作系统：Windows 10 64位
+磁盘空间：至少 4GB 可用空间
+内存：至少 8GB RAM
+
+二、安装步骤
+===========================================
+
+1. 下载Flutter SDK
+   访问：https://docs.flutter.dev/get-started/install/windows
+   下载：Flutter SDK for Windows (最新稳定版)
+   
+2. 解压Flutter SDK
+   解压到：C:\flutter
+   （或您选择的任意目录）
+
+3. 配置环境变量
+   - 添加到PATH：C:\flutter\bin
+   - 右键"此电脑" -> 属性 -> 高级系统设置 -> 环境变量
+   - 在系统变量的Path中添加：C:\flutter\bin
+
+4. 验证安装
+   打开命令提示符，运行：
+   flutter --version
+   
+   应该显示Flutter版本信息
+
+5. 运行Flutter Doctor
+   运行：flutter doctor
+   
+   检查是否所有依赖都已安装
+
+6. 安装Android Studio
+   下载：https://developer.android.com/studio
+   安装后，在Android Studio中安装：
+   - Android SDK
+   - Android SDK Platform-Tools
+   - Android SDK Build-Tools
+   - Flutter插件
+   - Dart插件
+
+7. 配置Android模拟器
+   打开Android Studio
+   Tools -> AVD Manager -> Create Virtual Device
+   选择设备型号（如 Pixel 5）
+   下载系统镜像（API 30 或更高）
+   启动模拟器
+
+三、项目运行
+===========================================
+
+1. 进入项目目录
+   cd C:\Users\Administrator\handwriting-input-app\frontend
+
+2. 安装依赖
+   flutter pub get
+
+3. 运行应用
+   flutter run
+   
+   或指定设备运行：
+   flutter devices
+   flutter run -d <设备ID>
+
+四、常见问题
+===========================================
+
+1. Flutter命令不识别
+   解决：检查环境变量Path是否正确配置
+
+2. Gradle下载缓慢
+   解决：配置国内镜像源
+   编辑 C:\flutter\packages\flutter_tools\gradle\gradle_wrapper.properties
+   添加：
+   distributionUrl=https://mirrors.cloud.tencent.com/gradle/gradle-7.5-all.zip
+
+3. 模拟器启动失败
+   解决：确保BIOS中启用了虚拟化技术（VT-x/AMD-V）
+
+===========================================

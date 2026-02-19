@@ -1,0 +1,296 @@
+===================================
+GPU训练方法标准化记录
+===================================
+记录时间: 2026年2月13日
+项目: 个性化手写输入法APP - 中文手写识别模型训练
+
+===================================
+1. 环境配置
+===================================
+
+## 1.1 硬件要求
+- GPU: NVIDIA GeForce RTX 3060 Ti (或其他CUDA兼容GPU)
+- 显存: 建议8GB以上
+- 内存: 建议16GB以上
+- 磁盘空间: 建议50GB以上可用空间
+
+## 1.2 软件环境
+- 操作系统: Windows 10/11
+- Miniconda3: C:\miniconda3
+- Python: 3.11
+- PyTorch: 2.5.1 (CUDA 12.1版本)
+- CUDA: 12.1
+- MySQL: 8.0.44
+- JDK: 11或25
+
+===================================
+2. GPU环境安装步骤
+===================================
+
+## 2.1 安装Miniconda
+1. 下载: Miniconda3-latest-Windows-x86_64.exe
+2. 安装路径: C:\miniconda3
+3. 手动安装（推荐），不使用自动安装脚本
+
+## 2.2 创建Conda环境
+```powershell
+# 接受所有通道的服务条款
+C:\miniconda3\Scripts\conda.exe tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+C:\miniconda3\Scripts\conda.exe tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+C:\miniconda3\Scripts\conda.exe tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2
+
+# 创建GPU环境
+C:\miniconda3\Scripts\conda.exe create -n pytorch-gpu python=3.11 -y
+```
+
+## 2.3 安装PyTorch GPU版本
+```powershell
+C:\miniconda3\Scripts\conda.exe install -n pytorch-gpu pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia -y
+```
+
+## 2.4 验证GPU环境
+```powershell
+C:\miniconda3\Scripts\conda.exe run -n pytorch-gpu python -c "import torch; print('CUDA可用:', torch.cuda.is_available()); print('GPU名称:', torch.cuda.get_device_name(0))"
+```
+
+预期输出:
+- CUDA可用: True
+- GPU名称: NVIDIA GeForce RTX 3060 Ti
+
+===================================
+3. 训练脚本配置
+===================================
+
+## 3.1 训练参数配置
+```python
+# 基础配置
+BASE_DIR = r"C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models"
+MODEL_DIR = os.path.join(BASE_DIR, "models_output")
+RESUME_CHECKPOINT = os.path.join(MODEL_DIR, "optimized_checkpoint_stepXXXX.pth")
+
+# 训练参数
+BATCH_SIZE = 16
+GRADIENT_ACCUMULATION = 2
+CLEAN_INTERVAL = 20
+SAVE_INTERVAL = 1000          # 每1000步保存一次checkpoint
+NUM_EPOCHS = 20
+LEARNING_RATE = 0.0005
+WEIGHT_DECAY = 0.0001
+IMG_SIZE = 128
+
+# 设备配置
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+```
+
+## 3.2 数据增强配置
+```python
+TRAIN_TRANSFORMS = transforms.Compose([
+    transforms.Grayscale(),
+    transforms.Resize((IMG_SIZE, IMG_SIZE)),
+    transforms.RandomRotation(10),           # 随机旋转10度
+    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # 随机平移
+    transforms.ToTensor(),
+    transforms.Normalize([0.5], [0.5])
+])
+```
+
+## 3.3 Checkpoint自动清理策略
+```python
+# 每次保存新checkpoint后，自动删除旧checkpoint（只保留最新的3个）
+all_checkpoints = [f for f in os.listdir(MODEL_DIR) if f.startswith("optimized_checkpoint_step") and f.endswith(".pth")]
+all_checkpoints.sort()
+if len(all_checkpoints) > 3:
+    for old_checkpoint in all_checkpoints[:-3]:
+        old_path = os.path.join(MODEL_DIR, old_checkpoint)
+        os.remove(old_path)
+```
+
+===================================
+4. 启动训练命令
+===================================
+
+## 4.1 启动训练
+```powershell
+cd C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models
+C:\miniconda3\Scripts\conda.exe run -n pytorch-gpu python train_gpu_resume.py
+```
+
+## 4.2 后台运行
+```powershell
+cd C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models
+C:\miniconda3\Scripts\conda.exe run -n pytorch-gpu python train_gpu_resume.py
+# 使用 -run_in_bg 参数在后台运行
+```
+
+===================================
+5. 训练监控
+===================================
+
+## 5.1 查看训练进程
+```powershell
+Get-Process | Where-Object {$_.ProcessName -like "*python*"} | Format-Table Id, ProcessName, CPU, WorkingSet
+```
+
+## 5.2 查看最新Checkpoint
+```powershell
+Get-ChildItem -Path "C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\models_output" -Filter "optimized_checkpoint_step*.pth" | Sort-Object Name -Descending | Select-Object -First 1
+```
+
+## 5.3 计算训练进度
+```powershell
+Get-ChildItem -Path "C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\models_output" -Filter "optimized_checkpoint_step*.pth" | Sort-Object Name -Descending | Select-Object -First 1 | ForEach-Object { $step = [int]($_.Name -replace "[^\d]", ""); $progress = [math]::Round(($step / 131680) * 100, 2); Write-Host "Step: $step, 进度: $progress%" }
+```
+
+## 5.4 查看训练日志
+```powershell
+# 如果有训练日志文件
+Get-Content -Path "C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\models_output\training_2hour_record.log" -Tail 50
+```
+
+===================================
+6. 磁盘空间管理
+===================================
+
+## 6.1 训练前清理
+- 建议C盘至少有50GB可用空间
+- 运行磁盘清理脚本释放空间
+
+## 6.2 Checkpoint自动清理
+- 配置为只保留最新的3个checkpoint
+- 每个checkpoint约431MB
+- 总共约1.3GB空间
+
+## 6.3 磁盘空间检查
+```powershell
+Get-PSDrive C | Select-Object Used, Free | ForEach-Object { $usedGB = [math]::Round($_.Used / 1GB, 2); $freeGB = [math]::Round($_.Free / 1GB, 2); Write-Host "已使用: $usedGB GB, 可用: $freeGB GB" }
+```
+
+===================================
+7. 训练结果
+===================================
+
+## 7.1 本次训练结果
+- 训练完成时间: 2026年2月13日 23:45
+- 最终Epoch: 19/20
+- 最终Step: 65,914
+- 最佳验证准确率: 98.32%
+- 验证损失: 1.5288
+- 训练损失: 1.9372
+
+## 7.2 模型文件
+- 最佳模型: optimized_best.pth (431.46 MB)
+- 最终模型: optimized_final.pth (143.84 MB)
+
+## 7.3 性能提升
+- 识别准确率: 从94.76%提升到98.32%（提升3.56%）
+- 错误率: 从5.24%降低到1.68%（降低68%）
+- 泛化能力: 验证损失从2.0降低到1.5288
+
+===================================
+8. 常见问题处理
+===================================
+
+## 8.1 模型架构不匹配
+错误: RuntimeError: Error(s) in loading state_dict
+解决: 确保训练脚本中的模型架构与checkpoint中的架构完全匹配
+
+## 8.2 磁盘写入失败
+错误: RuntimeError: PytorchStreamWriter failed writing file
+解决:
+1. 检查磁盘空间是否充足
+2. 增加checkpoint保存间隔（从50步改为1000步）
+3. 自动清理旧checkpoint文件
+
+## 8.3 Conda TOS错误
+错误: CondaToSNonInteractiveError: Terms of Service have not been accepted
+解决: 运行conda tos accept命令接受服务条款
+
+## 8.4 CUDA不可用
+错误: CUDA可用: False
+解决:
+1. 确认GPU驱动已正确安装
+2. 确认CUDA版本与PyTorch版本匹配
+3. 使用conda安装PyTorch GPU版本
+
+===================================
+9. 标准化训练流程总结
+===================================
+
+## 步骤1: 环境准备
+1. 确认GPU硬件可用
+2. 安装Miniconda到C:\miniconda3
+3. 创建pytorch-gpu环境（Python 3.11）
+4. 安装PyTorch 2.5.1 with CUDA 12.1
+5. 验证CUDA可用性
+
+## 步骤2: 数据准备
+1. 准备训练数据集
+2. 准备验证数据集
+3. 准备字符映射文件
+4. 检查数据完整性
+
+## 步骤3: 脚本准备
+1. 复制或创建训练脚本
+2. 配置训练参数（BATCH_SIZE, LEARNING_RATE等）
+3. 设置checkpoint保存间隔为1000步
+4. 配置自动清理旧checkpoint（保留最新3个）
+5. 确保模型架构与checkpoint匹配
+
+## 步骤4: 启动训练
+1. 检查磁盘空间（至少50GB）
+2. 切换到训练脚本目录
+3. 使用conda run启动训练
+4. 确认进程正常运行
+
+## 步骤5: 监控训练
+1. 定期检查训练进程状态
+2. 监控磁盘空间使用
+3. 查看checkpoint文件生成情况
+4. 记录训练进度
+
+## 步骤6: 完成处理
+1. 确认训练完成
+2. 检查最佳模型文件
+3. 验证模型性能
+4. 清理不必要的文件
+
+===================================
+10. 注意事项
+===================================
+
+1. **磁盘空间**: 训练过程中会产生大量checkpoint文件，必须配置自动清理
+2. **模型架构**: 确保训练脚本中的模型架构与要恢复的checkpoint完全匹配
+3. **GPU内存**: 监控GPU内存使用，避免OOM错误
+4. **训练中断**: 训练可以随时中断，下次会从最新checkpoint继续
+5. **数据增强**: 保持数据增强配置一致，确保训练稳定性
+6. **学习率调度**: 使用ReduceLROnPlateau调度器自动调整学习率
+7. **内存清理**: 定期清理GPU和系统内存，避免内存泄漏
+
+===================================
+11. 快速命令参考
+===================================
+
+# 检查GPU
+nvidia-smi
+
+# 检查CUDA可用性
+C:\miniconda3\Scripts\conda.exe run -n pytorch-gpu python -c "import torch; print(torch.cuda.is_available())"
+
+# 启动训练
+cd C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models
+C:\miniconda3\Scripts\conda.exe run -n pytorch-gpu python train_gpu_resume.py
+
+# 查看进程
+Get-Process | Where-Object {$_.ProcessName -like "*python*"}
+
+# 检查磁盘空间
+Get-PSDrive C | Select-Object Used, Free
+
+# 查看最新checkpoint
+Get-ChildItem -Path "C:\Users\Administrator\handwriting-input-app\backend\src\main\resources\static\models\models_output" -Filter "*.pth" | Sort-Object LastWriteTime -Descending
+
+===================================
+记录结束
+===================================
+以后所有模型训练均按照此方法执行
+GPU训练模式已标准化

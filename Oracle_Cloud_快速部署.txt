@@ -1,0 +1,384 @@
+============================================
+Oracle Cloud 快速部署指南
+============================================
+
+准备时间: 30-60分钟
+免费额度: 永久免费
+
+============================================
+步骤1: 创建Oracle Cloud账户 (5分钟)
+============================================
+
+1. 访问: https://www.oracle.com/cloud/free/
+2. 点击 "Try Free"
+3. 填写账户信息（姓名、邮箱、密码）
+4. 添加信用卡验证（仅验证，不扣费）
+5. 完成邮箱验证
+
+✓ 完成标志: 可以登录Oracle Cloud Console
+
+============================================
+步骤2: 生成SSH密钥 (2分钟)
+============================================
+
+Windows用户:
+-----------------------------------
+1. 打开PowerShell
+2. 执行命令:
+   ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+3. 按Enter使用默认路径
+4. 输入密码（可选）
+5. 执行命令查看公钥:
+   type %USERPROFILE%\.ssh\id_rsa.pub
+6. 复制公钥内容（从 ssh-rsa 开始）
+
+Linux/Mac用户:
+-----------------------------------
+1. 打开终端
+2. 执行命令:
+   ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+3. 按Enter使用默认路径
+4. 输入密码（可选）
+5. 执行命令查看公钥:
+   cat ~/.ssh/id_rsa.pub
+6. 复制公钥内容（从 ssh-rsa 开始）
+
+✓ 完成标志: 已复制SSH公钥
+
+============================================
+步骤3: 创建Compute实例 (10分钟)
+============================================
+
+1. 登录 Oracle Cloud Console
+2. 打开菜单 → Compute → Instances
+3. 点击 "Create Instance"
+4. 填写配置:
+
+   基本信息:
+   -----------------------------------
+   Name: handwriting-app-server
+   Compartment: 选择您的compartment
+
+   实例类型:
+   -----------------------------------
+   Shape: VM.Standard.E4.Flex (Always Free)
+   OCPU数: 4
+   内存: 24GB
+
+   操作系统:
+   -----------------------------------
+   Image: Ubuntu 22.04 Minimal
+   Version: 最新版本
+
+   SSH密钥:
+   -----------------------------------
+   选择: Paste SSH Keys
+   粘贴: 步骤2复制的公钥
+
+   网络:
+   -----------------------------------
+   VCN: 创建新的VCN
+   Subnet: 公有子网
+   Public IP: 分配公网IP
+
+5. 点击 "Create"
+6. 等待实例创建（约5-10分钟）
+
+✓ 完成标志: 实例状态为 "Running"
+
+============================================
+步骤4: 连接到实例 (2分钟)
+============================================
+
+记录实例的公网IP地址
+-----------------------------------
+1. 点击实例名称
+2. 查看 "Primary VNIC" 中的 "Public IP Address"
+
+Windows用户 (PowerShell):
+-----------------------------------
+ssh -i C:\Users\YourName\.ssh\id_rsa ubuntu@<public-ip>
+
+Linux/Mac用户:
+-----------------------------------
+ssh -i ~/.ssh/id_rsa ubuntu@<public-ip>
+
+PuTTY用户:
+-----------------------------------
+1. 使用PuTTYgen转换私钥为.ppk格式
+2. 配置Host Name: <public-ip>
+3. 用户名: ubuntu
+4. 点击 "Open"
+
+✓ 完成标志: 成功登录到实例
+
+============================================
+步骤5: 安装Docker (5分钟)
+================================------------
+
+执行以下命令:
+-----------------------------------
+sudo apt update && sudo apt upgrade -y
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+sudo usermod -aG docker ubuntu
+
+# 重新登录使权限生效
+exit
+# 重新SSH连接
+
+# 验证安装
+docker --version
+docker-compose --version
+
+✓ 完成标志: 显示Docker和Docker Compose版本
+
+============================================
+步骤6: 上传项目文件 (5分钟)
+============================================
+
+方式1: 使用SCP (推荐)
+-----------------------------------
+# 在本地PowerShell执行
+scp -i C:\Users\YourName\.ssh\id_rsa -r C:\Users\Administrator\handwriting-input-app ubuntu@<public-ip>:/home/ubuntu/
+
+方式2: 使用SFTP工具
+-----------------------------------
+推荐工具:
+- WinSCP (Windows)
+- FileZilla
+- Cyberduck
+
+连接信息:
+- 主机: <public-ip>
+- 端口: 22
+- 用户名: ubuntu
+- 私钥: C:\Users\YourName\.ssh\id_rsa
+
+✓ 完成标志: 文件上传到 /home/ubuntu/handwriting-input-app/
+
+============================================
+步骤7: 配置环境变量 (2分钟)
+================================------------
+
+1. SSH连接到实例
+2. 进入项目目录:
+   cd /home/ubuntu/handwriting-input-app
+
+3. 复制环境变量模板:
+   cp .env.example .env
+
+4. 编辑环境变量:
+   nano .env
+
+5. 修改以下内容:
+   MYSQL_ROOT_PASSWORD=YourStrongRootPassword123!
+   MYSQL_PASSWORD=YourStrongPassword123!
+
+6. 保存并退出 (Ctrl+X, Y, Enter)
+
+✓ 完成标志: .env文件已配置
+
+============================================
+步骤8: 启动服务 (5分钟)
+============================================
+
+1. 进入项目目录:
+   cd /home/ubuntu/handwriting-input-app
+
+2. 设置脚本权限:
+   chmod +x deploy-oracle-cloud.sh
+
+3. 运行部署脚本:
+   ./deploy-oracle-cloud.sh
+
+4. 等待部署完成（约5-10分钟）
+
+✓ 完成标志: 显示 "部署完成！"
+
+============================================
+步骤9: 配置安全组 (3分钟)
+============================================
+
+1. 在Oracle Cloud Console
+2. 打开 Networking → Virtual Cloud Networks
+3. 选择您的VCN
+4. 打开 Security Lists → Default Security List
+
+添加入站规则:
+-----------------------------------
+规则1:
+源类型: CIDR
+源CIDR: 0.0.0.0/0
+IP协议: TCP
+目标端口范围: 8080
+描述: HTTP API
+
+规则2:
+源类型: CIDR
+源CIDR: 0.0.0.0/0
+IP协议: TCP
+目标端口范围: 22
+描述: SSH
+
+✓ 完成标志: 安全组规则已添加
+
+============================================
+步骤10: 测试部署 (2分钟)
+============================================
+
+在本地浏览器测试:
+-----------------------------------
+1. 访问健康检查:
+   http://<public-ip>:8080/api/v1/health
+
+   应该返回:
+   {"status":"UP","timestamp":"...","service":"handwriting-input-app","version":"1.0.0"}
+
+2. 测试用户注册:
+   打开浏览器开发者工具 (F12)
+   在Console执行:
+   fetch('http://<public-ip>:8080/api/v1/user/register', {
+     method: 'POST',
+     headers: {'Content-Type': 'application/json'},
+     body: JSON.stringify({
+       phone: '13800138001',
+       password: '123456',
+       nickname: '测试用户'
+     })
+   }).then(r => r.json()).then(console.log)
+
+✓ 完成标志: 测试通过
+
+============================================
+步骤11: 配置前端 (5分钟)
+============================================
+
+1. 在本地编辑文件:
+   C:\Users\Administrator\handwriting-input-app\frontend\lib\utils\app_config.dart
+
+2. 修改API地址:
+   static const String baseUrl = 'http://<public-ip>:8080/api/v1';
+
+3. 重新编译APK:
+   cd C:\Users\Administrator\handwriting-input-app\frontend
+   flutter build apk --release
+
+4. 获取APK文件:
+   C:\Users\Administrator\handwriting-input-app\frontend\build\app\outputs\flutter-apk\app-release.apk
+
+✓ 完成标志: APK编译完成
+
+============================================
+常用管理命令
+============================================
+
+查看服务状态:
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml ps
+
+查看日志:
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml logs -f backend
+
+重启服务:
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml restart
+
+停止服务:
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml down
+
+启动服务:
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml up -d
+
+更新代码:
+-----------------------------------
+# 在本地
+cd C:\Users\Administrator\handwriting-input-app
+git add .
+git commit -m "Update"
+git push
+
+# 在服务器
+ssh ubuntu@<public-ip>
+cd /home/ubuntu/handwriting-input-app
+git pull
+docker-compose -f docker-compose.oracle.yml down
+docker-compose -f docker-compose.oracle.yml build backend
+docker-compose -f docker-compose.oracle.yml up -d
+
+============================================
+费用监控
+============================================
+
+免费额度:
+-----------------------------------
+- 2个OCPUs (计算实例)
+- 24GB内存
+- 200GB块存储
+- 2个Autonomous Database
+- 10TB/月出站流量
+
+查看使用情况:
+-----------------------------------
+1. 登录 Oracle Cloud Console
+2. 打开 Billing & Cost Management
+3. 查看 Cost Analysis
+
+超出免费额度费用:
+-----------------------------------
+- 附加OCPUs: $0.0476/小时
+- 附加内存: $0.006/GB/小时
+- 附加存储: $0.0255/GB/月
+- 出站流量: $0.0085/GB
+
+============================================
+故障排除
+============================================
+
+问题1: 无法连接到实例
+-----------------------------------
+- 检查安全组规则
+- 确认SSH端口已开放
+- 检查防火墙状态
+
+问题2: MySQL连接失败
+-----------------------------------
+docker-compose -f docker-compose.oracle.yml logs mysql
+
+问题3: 内存不足
+-----------------------------------
+free -h
+docker system prune -a
+
+问题4: 磁盘空间不足
+-----------------------------------
+df -h
+docker exec handwriting-backend rm -rf /app/logs/*
+
+============================================
+部署完成
+============================================
+
+✓ 恭喜！部署完成
+
+访问地址:
+http://<public-ip>:8080
+
+管理面板:
+https://console.oraclecloud.com
+
+文档:
+Oracle_Cloud_部署指南.md
+
+============================================
+
+准备就绪！现在可以开始使用了！
+============================================

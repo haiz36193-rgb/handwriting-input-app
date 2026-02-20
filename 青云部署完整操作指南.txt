@@ -1,0 +1,204 @@
+============================================
+青云部署完整操作指南
+============================================
+
+您的服务器信息：
+- 公网IP：139.198.30.21
+- 系统：Ubuntu 20.04
+
+============================================
+部署步骤
+============================================
+
+方式1：使用自动部署脚本（推荐）
+-----------------------------------
+
+步骤1：连接到服务器
+-----------------------------------
+在PowerShell中运行：
+ssh root@139.198.30.21
+
+步骤2：下载并运行部署脚本
+-----------------------------------
+连接成功后，依次执行：
+
+# 下载部署脚本
+curl -O https://raw.githubusercontent.com/haiz36193-rgb/handwriting-input-app/master/deploy-qingcloud.sh
+
+# 添加执行权限
+chmod +x deploy-qingcloud.sh
+
+# 运行部署脚本
+./deploy-qingcloud.sh
+
+步骤3：等待部署完成
+-----------------------------------
+脚本会自动完成以下操作：
+1. 更新系统
+2. 安装Docker和Docker Compose
+3. 安装Git和Maven
+4. 克隆项目
+5. 配置环境变量
+6. 构建后端
+7. 启动服务
+8. 等待服务就绪
+
+预计时间：10-15分钟
+
+============================================
+方式2：手动部署
+-----------------------------------
+
+如果自动脚本失败，可以手动执行以下命令：
+
+# 1. 更新系统
+sudo apt-get update
+
+# 2. 安装Docker
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 3. 安装Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# 4. 安装Git和Maven
+sudo apt-get install -y git maven
+
+# 5. 克隆项目
+git clone https://github.com/haiz36193-rgb/handwriting-input-app.git
+cd handwriting-input-app
+
+# 6. 配置环境变量
+cp .env.example .env
+nano .env
+# 修改密码后保存
+
+# 7. 构建后端
+cd backend
+mvn clean package -DskipTests
+cd ..
+
+# 8. 启动服务
+docker-compose -f docker-compose.aliyun.yml up -d
+
+# 9. 查看日志
+docker-compose -f docker-compose.aliyun.yml logs -f
+
+============================================
+验证部署
+============================================
+
+部署完成后，在浏览器中访问：
+
+健康检查：
+http://139.198.30.21:8080/api/v1/health
+
+应该返回：
+{"status":"UP","timestamp":"...","service":"handwriting-input-app","version":"1.0.0"}
+
+============================================
+测试API
+============================================
+
+在PowerShell中测试：
+
+# 注册用户
+curl -X POST http://139.198.30.21:8080/api/v1/user/register `
+  -H "Content-Type: application/json" `
+  -d '{"phone":"13800138000","password":"123456","nickname":"测试用户"}'
+
+# 登录用户
+curl -X POST http://139.198.30.21:8080/api/v1/user/login `
+  -H "Content-Type: application/json" `
+  -d '{"phone":"13800138000","password":"123456"}'
+
+============================================
+常见问题
+============================================
+
+问题1：SSH连接失败
+-----------------------------------
+- 检查服务器是否运行
+- 检查安全组是否开放22端口
+- 确认密码正确
+
+问题2：Docker安装失败
+-----------------------------------
+# 手动安装Docker
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+
+问题3：构建失败
+-----------------------------------
+# 检查内存
+free -h
+
+# 如果内存不足，增加swap
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+问题4：服务启动失败
+-----------------------------------
+# 查看日志
+docker-compose -f docker-compose.aliyun.yml logs backend
+
+# 重启服务
+docker-compose -f docker-compose.aliyun.yml restart
+
+============================================
+管理命令
+============================================
+
+# 查看所有服务状态
+docker-compose -f docker-compose.aliyun.yml ps
+
+# 查看后端日志
+docker-compose -f docker-compose.aliyun.yml logs -f backend
+
+# 查看MySQL日志
+docker-compose -f docker-compose.aliyun.yml logs -f mysql
+
+# 重启所有服务
+docker-compose -f docker-compose.aliyun.yml restart
+
+# 停止所有服务
+docker-compose -f docker-compose.aliyun.yml down
+
+# 启动所有服务
+docker-compose -f docker-compose.aliyun.yml up -d
+
+============================================
+性能监控
+============================================
+
+# 查看资源使用
+docker stats
+
+# 查看内存使用
+free -h
+
+# 查看磁盘使用
+df -h
+
+============================================
+部署完成后
+============================================
+
+1. 更新前端配置
+   - 修改 frontend/lib/utils/app_config.dart
+   - 将 baseUrl 改为 http://139.198.30.21:8080/api/v1
+
+2. 重新编译APK
+   cd frontend
+   flutter build apk --release
+
+3. 分发给用户
+
+============================================
+
+祝部署顺利！
+============================================
